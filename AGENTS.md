@@ -40,7 +40,7 @@ Rules for the macOS app, CI workflows, campaign packs and the API schema are in 
 - When a requirement is ambiguous, or a choice is hard to reverse (data formats, the local API, dependencies, concurrency design), present the options with their trade-offs and ask before building.
 - If a test looks wrong, stop and explain why instead of changing it. Never delete, skip or loosen an existing test, or special-case inputs, to make a change pass; a passing test that proves nothing hides real bugs from users.
 - Measure before optimising, and show the `benchstat` result for any change that claims to be faster. Hot paths keep allocations low and stream large files rather than loading them whole.
-- Sign off every commit with `git commit -s`; the DCO check rejects commits without it. Add an `Assisted-by:` trailer naming the tool, for example `Assisted-by: Claude Code`.
+- Sign off every commit with `git commit -s`; the DCO check rejects commits without it. Don't credit the AI tool in a commit: no `Co-Authored-By:` line naming the agent and no `Assisted-by:` trailer.
 
 ## Design
 

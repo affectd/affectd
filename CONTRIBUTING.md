@@ -103,7 +103,7 @@ You are responsible for everything you submit:
 
 - Understand every line and be able to explain it in review.
 - Make sure the tool's terms don't restrict how its output can be used, and that it hasn't reproduced someone else's code without a compatible licence, as the [Linux Foundation's guidance](https://www.linuxfoundation.org/legal/generative-ai) asks.
-- If an AI tool wrote a meaningful part of the change, add an `Assisted-by:` trailer naming it, for example `Assisted-by: Claude Code`.
+- Don't credit the AI tool in your commits: no `Co-Authored-By:` line naming the agent and no `Assisted-by:` trailer.
 - Keep pull request descriptions and comments short and in your own words. Long generated text costs reviewers time.
 
 Pull requests opened by an agent with no person reviewing them first will be closed.
