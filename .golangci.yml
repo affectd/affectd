@@ -1,0 +1,84 @@
+# Lint configuration. Several rules here enforce CLAUDE.md in code, so a
+# violation fails `make check` instead of relying on anyone remembering it.
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  # standard = errcheck, govet, ineffassign, staticcheck, unused
+  default: standard
+  enable:
+    - bodyclose   # unclosed HTTP bodies leak connections in the data fetcher
+    - depguard    # network and process access only where allowed (below)
+    - errorlint   # wrapped errors compared correctly
+    - forbidigo   # forbidden calls (below)
+    - gosec       # common security mistakes
+    - misspell
+    - nilerr      # returning nil after checking an error
+    - noctx       # every request takes a context, so scans can be cancelled
+    # Maintainability, so KISS and DRY are measured rather than hoped for:
+    - dupl        # duplicated blocks (AI-assisted code duplicates far more often)
+    - gocognit    # functions too complex to read at a glance
+    - gocritic    # diagnostic and performance checks
+    - godox       # no TODO or FIXME placeholders: finish the work or open an issue
+    - perfsprint  # cheaper alternatives to fmt.Sprintf
+    - revive      # Go Code Review Comments: naming, doc comments, error style
+    - unparam     # parameters that are always the same or unused
+  settings:
+    dupl:
+      threshold: 50
+    gocognit:
+      min-complexity: 20
+    gocritic:
+      enabled-tags: [diagnostic, performance]
+    godox:
+      keywords: [TODO, FIXME, HACK, XXX]
+    depguard:
+      rules:
+        network:
+          files:
+            - "$all"
+            - "!$test"
+            - "!**/internal/data/**"
+            - "!**/internal/ai/**"
+          deny:
+            - pkg: net/http
+              desc: "Only internal/data (threat data) and internal/ai (user-configured AI provider) make network calls."
+        processes:
+          files:
+            - "$all"
+            - "!$test"
+            - "!**/internal/respond/**"
+            - "!**/internal/platform/**"
+          deny:
+            - pkg: os/exec
+              desc: "affectd never runs scanned content. Launching processes lives in internal/respond and internal/platform."
+    forbidigo:
+      forbid:
+        - pattern: ^os\.(ReadFile|Open)$
+          msg: "Read user files through internal/safeio, which enforces size limits and symlink checks."
+        - pattern: ^fmt\.Print
+          msg: "Use log/slog. Only cmd/affectd writes to stdout."
+        - pattern: ^panic$
+          msg: "Return an error. A crash stops protection."
+  exclusions:
+    rules:
+      - path: internal/safeio/
+        linters: [forbidigo]
+      - path: cmd/
+        text: "fmt.Print"
+        linters: [forbidigo]
+      - path: _test\.go
+        linters: [forbidigo, gosec, dupl]
+
+issues:
+  # Report every issue, even several on one line, so all of them are fixed in one pass.
+  uniq-by-line: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+formatters:
+  enable:
+    - gofmt
+    - goimports

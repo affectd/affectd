@@ -1,0 +1,210 @@
+# Pull-request and main-branch quality gates. One aggregate job, ci-ok, is the
+# only status check branch protection needs to require.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions: {}
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # read the repository
+    steps:
+      - uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
+        with:
+          version: v2.15.0
+      - run: make fmt-check vet
+
+  test:
+    name: Test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read # read the repository
+    steps:
+      - if: runner.os == 'Linux'
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - name: Test with the race detector
+        if: runner.os != 'Windows'
+        run: make test
+      - name: Test
+        if: runner.os == 'Windows'
+        run: go test -shuffle=on -count=1 ./...
+
+  vuln:
+    name: Known vulnerabilities
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # read the repository
+    steps:
+      - uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - run: make vuln
+
+  fuzz:
+    name: Fuzz (smoke)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # read the repository
+    steps:
+      - uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - run: make fuzz FUZZTIME=20s
+
+  # affectd scans its own repository and build environment, the way gittuf
+  # verifies its own repository with gittuf. Starts once the CLI exists.
+  dogfood:
+    name: affectd scans itself
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # read the repository
+    steps:
+      - uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - name: Scan this repository with affectd
+        if: hashFiles('cmd/affectd/main.go') != ''
+        run: go run ./cmd/affectd scan --path . --format json --fail-on compromised
+
+  swift:
+    name: macOS app
+    runs-on: macos-latest
+    permissions:
+      contents: read # read the repository
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build and test the macOS app
+        if: hashFiles('apps/macos/Package.swift') != ''
+        run: |
+          swift build --package-path apps/macos
+          swift test --package-path apps/macos
+
+  test-integrity:
+    name: Test integrity
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # read the repository
+    steps:
+      - uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - run: python3 scripts/test-integrity.py "origin/${GITHUB_BASE_REF}"
+
+  benchmarks:
+    name: Benchmarks vs base
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # read the repository
+    steps:
+      - uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      # Base and head run on the same machine, so the comparison is fair.
+      - name: Compare benchmarks with the base branch
+        run: |
+          git checkout --quiet "origin/${GITHUB_BASE_REF}"
+          make bench && mv bench/new.txt /tmp/base.txt
+          git checkout --quiet "${GITHUB_SHA}"
+          make bench && cp /tmp/base.txt bench/base.txt
+          make bench-compare | tee -a "$GITHUB_STEP_SUMMARY"
+
+  # Test-builds the release on every pull request, as Cosign does, so a
+  # broken release configuration is caught before a tag is pushed.
+  release-snapshot:
+    name: Release test-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # read the repository
+    steps:
+      - uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false # release builds never use a shared cache
+      - name: Test-build the release
+        if: hashFiles('cmd/affectd/main.go') != ''
+        uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
+        with:
+          distribution: goreleaser
+          version: v2.19.0
+          args: release --snapshot --clean --skip=sign,sbom,publish
+
+  ci-ok:
+    name: CI passed
+    if: always()
+    needs: [lint, test, vuln, fuzz, dogfood, swift, test-integrity, benchmarks, release-snapshot]
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Require every job to pass or be skipped
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS" | python3 -c 'import json,sys; bad={k:v["result"] for k,v in json.load(sys.stdin).items() if v["result"] not in ("success","skipped")}; print(bad or "all jobs passed"); sys.exit(1 if bad else 0)'

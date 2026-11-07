@@ -1,0 +1,54 @@
+# Independent watchdog for the threat data. Every three hours it checks that the
+# latest data release is recent and correctly signed by the data repository's
+# build workflow, and opens one issue if not. It runs here, not in the data
+# repository, so a broken data pipeline can't silence its own alarm.
+name: data-watch
+on:
+  schedule:
+    - cron: "47 */3 * * *"
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+jobs:
+  freshness:
+    name: Threat data is fresh and signed
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write # open an issue when the data is stale or unverifiable
+    steps:
+      - name: Harden the runner
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - name: Check age and signature of the latest data release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DATA_REPO: ${{ github.repository_owner }}/data
+          MAX_AGE_HOURS: "6"
+        run: |
+          set -euo pipefail
+          tag=$(gh release view --repo "$DATA_REPO" --json tagName -q .tagName)
+          published=$(gh release view --repo "$DATA_REPO" --json publishedAt -q .publishedAt)
+          age=$(( ( $(date +%s) - $(date -d "$published" +%s) ) / 3600 ))
+          problem=""
+          [ "$age" -le "$MAX_AGE_HOURS" ] || problem="Latest data release $tag is $age hours old; builds should be hourly."
+          gh release download "$tag" --repo "$DATA_REPO" --pattern 'affectd-data.tar.zst*' --dir data
+          cosign verify-blob data/affectd-data.tar.zst \
+            --bundle data/affectd-data.tar.zst.sigstore.json \
+            --certificate-identity "https://github.com/$DATA_REPO/.github/workflows/build.yml@refs/heads/main" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            || problem="$problem Signature verification failed for $tag."
+          if [ -n "$problem" ]; then
+            open=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --label data-watch --json number -q 'length')
+            if [ "$open" = "0" ]; then
+              gh issue create --repo "$GITHUB_REPOSITORY" --label data-watch \
+                --title "Threat data is stale or unverifiable" --body "$problem"
+            fi
+            echo "::error::$problem"
+            exit 1
+          fi
+          echo "Data release $tag is $age hours old and correctly signed."

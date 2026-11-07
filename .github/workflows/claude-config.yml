@@ -1,0 +1,29 @@
+# Blocks Claude Code configuration that could run code or leak credentials on
+# contributors' machines (see scripts/check-claude-config.py).
+name: claude-config
+on:
+  pull_request:
+    paths:
+      - ".claude/**"
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - ".mcp.json"
+      - "scripts/check-claude-config.py"
+permissions: {}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  check:
+    name: Claude config check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # read the repository
+    steps:
+      - uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: python3 scripts/check-claude-config.py

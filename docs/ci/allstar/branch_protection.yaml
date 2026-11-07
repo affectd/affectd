@@ -1,0 +1,16 @@
+optConfig:
+  optOutStrategy: true
+action: issue
+enforceDefault: true
+enforceOnAdmins: true
+requireApproval: true
+approvalCount: 1
+dismissStale: true
+requireCodeOwnerReviews: true
+blockForce: true
+requireUpToDateBranch: true
+requireStatusChecks:
+  - CI passed
+  - Dependency review
+  - Workflow security (zizmor)
+  - CodeQL

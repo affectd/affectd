@@ -1,0 +1,51 @@
+name: Bug report
+description: Something in affectd doesn't work as documented
+title: "[bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For security vulnerabilities, use [private reporting](https://github.com/affectd/affectd/security/advisories/new) instead. Remove any tokens, keys or private paths from logs before pasting them.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Include the command you ran and its output.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+  - type: input
+    id: version
+    attributes:
+      label: affectd version
+      description: The output of `affectd version`.
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS
+        - Linux
+        - Windows
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How you installed affectd
+      options:
+        - Homebrew
+        - Release download
+        - Built from source

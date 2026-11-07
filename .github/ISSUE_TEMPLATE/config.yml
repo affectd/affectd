@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/affectd/affectd/security/advisories/new
+    about: Report vulnerabilities in affectd privately, not in a public issue.
+  - name: Report a new malicious package
+    url: https://github.com/ossf/malicious-packages
+    about: Packages no database lists yet go to OpenSSF Malicious Packages, which affectd uses.
+  - name: Ask a question
+    url: https://github.com/affectd/affectd/discussions
+    about: Questions and ideas go in Discussions.

@@ -1,0 +1,17 @@
+# These files run on contributors' machines or publish releases. With branch
+# protection requiring code-owner review, a change by one maintainer always
+# needs the other maintainer to approve it. Replace omarg-dev.
+/.claude/                        @RayanAlyasi @omarg-dev
+/AGENTS.md                       @RayanAlyasi @omarg-dev
+/CLAUDE.md                       @RayanAlyasi @omarg-dev
+/.mcp.json                       @RayanAlyasi @omarg-dev
+/.github/                        @RayanAlyasi @omarg-dev
+/scripts/check-claude-config.py  @RayanAlyasi @omarg-dev
+/campaigns/                      @RayanAlyasi @omarg-dev
+# The quality gates themselves: weakening them would be the easy way to "pass".
+/Makefile                        @RayanAlyasi @omarg-dev
+/.golangci.yml                   @RayanAlyasi @omarg-dev
+/scripts/                        @RayanAlyasi @omarg-dev
+/.goreleaser.yaml                @RayanAlyasi @omarg-dev
+/docs/ci/                        @RayanAlyasi @omarg-dev
+/docs/decisions/                 @RayanAlyasi @omarg-dev

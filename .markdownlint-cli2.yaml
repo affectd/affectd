@@ -1,0 +1,10 @@
+# Markdown style checks. Long lines are fine (one sentence per line reads better
+# in diffs), and the README opens with an HTML <picture> banner.
+config:
+  default: true
+  MD013: false
+  MD033:
+    allowed_elements: [picture, source, img]
+  MD041: false
+ignores:
+  - "node_modules/**"

@@ -1,0 +1,5 @@
+# Copy this folder into the organisation's .allstar repository.
+# Policies apply to every repository unless it opts out.
+optConfig:
+  optOutStrategy: true
+issueLabel: allstar

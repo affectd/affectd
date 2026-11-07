@@ -1,0 +1,46 @@
+name: Missed or wrong detection
+description: affectd missed an attack, flagged something safe, or gave wrong advice
+title: "[detection]: "
+labels: ["detection"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks, these reports make affectd better for everyone.
+
+        Don't paste real tokens, keys or malware, even if they're expired. If you've found a malicious package that no database lists yet, report it to [OpenSSF Malicious Packages](https://github.com/ossf/malicious-packages) first; affectd picks it up from there.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What went wrong?
+      options:
+        - affectd missed an attack
+        - affectd flagged something that is safe
+        - The response steps were wrong or in the wrong order
+    validations:
+      required: true
+  - type: textarea
+    id: item
+    attributes:
+      label: Package, extension or MCP server
+      description: Name, ecosystem and version, for example `@scope/pkg 1.2.3 (npm)`.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source
+      description: A link to the advisory, OSV entry or write-up that shows it's malicious (or safe).
+  - type: textarea
+    id: details
+    attributes:
+      label: What happened and what you expected
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: affectd and threat-data versions
+      description: The output of `affectd version`.
+    validations:
+      required: true

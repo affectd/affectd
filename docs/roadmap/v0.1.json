@@ -1,0 +1,142 @@
+{
+  "milestone": "v0.1",
+  "rules": "A feature passes only when its acceptance test exists and `make check` is green. Change only the `passes` field; never edit a description or acceptance criteria to make a feature pass.",
+  "features": [
+    {
+      "id": "F01-skeleton",
+      "description": "Repository skeleton: Go module with govulncheck, benchstat and gremlins pinned as go.mod tools; Makefile quality gates; .golangci.yml; the CI system in docs/ci.md (ci, security, codeql, scorecard, weekly, release, verify-release, data-watch, claude-config); .goreleaser.yaml; Dependabot; the one-time GitHub setup.",
+      "acceptance": "On the first pull request every workflow runs green and CI passed is the required check; actionlint and zizmor (auditor persona) report no findings; a snapshot release builds reproducibly; the lint rules reject a deliberate violation of each rule.",
+      "depends_on": [],
+      "passes": false
+    },
+    {
+      "id": "F02-safeio",
+      "description": "internal/safeio: size-limited file reading that refuses to follow symlinks outside the scan roots.",
+      "acceptance": "TestSafeIOLimits and TestSafeIOSymlinkEscape pass; FuzzSafeIORead runs for 60 seconds without failures.",
+      "depends_on": [
+        "F01-skeleton"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F03-inventory-npm",
+      "description": "Inventory npm packages from lockfiles and installed node_modules through OSV-SCALIBR.",
+      "acceptance": "TestInventoryNpm finds every package in testdata/fixtures/npm-project/ and nothing else.",
+      "depends_on": [
+        "F02-safeio"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F04-inventory-pypi",
+      "description": "Inventory Python packages from lockfiles and installed environments through OSV-SCALIBR.",
+      "acceptance": "TestInventoryPyPI finds every package in testdata/fixtures/python-project/.",
+      "depends_on": [
+        "F02-safeio"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F05-inventory-extensions",
+      "description": "Inventory editor extensions for VS Code, Cursor and Windsurf.",
+      "acceptance": "TestInventoryExtensions lists every extension in testdata/fixtures/editors/.",
+      "depends_on": [
+        "F02-safeio"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F06-inventory-mcp",
+      "description": "Inventory MCP server configurations for Claude Code, Claude Desktop, Cursor and Windsurf.",
+      "acceptance": "TestInventoryMCP lists every server in testdata/fixtures/mcp-configs/ with its command and source file.",
+      "depends_on": [
+        "F02-safeio"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F07-store",
+      "description": "Local SQLite store for inventory and findings, readable only by the user.",
+      "acceptance": "TestStoreRoundTrip passes; TestStorePermissions confirms the database file is user-only.",
+      "depends_on": [
+        "F01-skeleton"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F08-data-verify",
+      "description": "Download the signed data file and verify its Sigstore signature, signing identity and freshness; refuse older files.",
+      "acceptance": "TestDataVerify accepts the valid test vector and rejects tampered, wrongly signed and older files.",
+      "depends_on": [
+        "F01-skeleton"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F09-match-malicious",
+      "description": "Match the inventory against the malicious-package index.",
+      "acceptance": "TestMatchMalicious flags the known-malicious versions in testdata/fixtures/infected-npm/ and nothing in testdata/fixtures/clean/.",
+      "depends_on": [
+        "F03-inventory-npm",
+        "F07-store",
+        "F08-data-verify"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F10-match-exploited",
+      "description": "Match the inventory against OSV records for CVEs in CISA KEV.",
+      "acceptance": "TestMatchExploited flags the exploited versions in testdata/fixtures/kev-project/.",
+      "depends_on": [
+        "F09-match-malicious"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F11-retroactive",
+      "description": "Re-match new threat data against the stored inventory without scanning the disk.",
+      "acceptance": "TestRetroactiveAlert: a package installed before its report appears is flagged after a data update, with no file reads.",
+      "depends_on": [
+        "F09-match-malicious"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F12-replay-mini-shai-hulud",
+      "description": "First campaign pack (Mini Shai-Hulud) and its replay fixture.",
+      "acceptance": "TestReplay/mini-shai-hulud fires on its fixture and stays quiet on testdata/fixtures/clean/.",
+      "depends_on": [
+        "F09-match-malicious"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F13-cli-report",
+      "description": "`affectd scan` prints findings grouped by severity, with a documented JSON output.",
+      "acceptance": "TestCLIReportGolden matches the golden text and JSON outputs for testdata/fixtures/infected-npm/.",
+      "depends_on": [
+        "F09-match-malicious"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F14-local-api",
+      "description": "Local API from proto/: list findings over a user-only socket.",
+      "acceptance": "TestLocalAPIListFindings passes; TestLocalAPISocketPermissions confirms only the user can connect.",
+      "depends_on": [
+        "F07-store"
+      ],
+      "passes": false
+    },
+    {
+      "id": "F15-performance-budgets",
+      "description": "Benchmarks for matching, re-matching and large-lockfile inventory, with the budgets from .claude/rules/matching.md.",
+      "acceptance": "BenchmarkMatch, BenchmarkRematch and BenchmarkInventoryNpmLarge exist; a budget test (skipped with -short) fails if matching 10,000 packages against a 250,000-entry index exceeds 50 ms or the index exceeds 100 MB; CI posts a benchstat comparison on every pull request.",
+      "depends_on": [
+        "F11-retroactive",
+        "F03-inventory-npm"
+      ],
+      "passes": false
+    }
+  ]
+}
