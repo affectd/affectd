@@ -1,6 +1,6 @@
 # These files run on contributors' machines or publish releases. With branch
 # protection requiring code-owner review, a change by one maintainer always
-# needs the other maintainer to approve it. Replace omarg-dev.
+# needs the other maintainer to approve it.
 /.claude/                        @RayanAlyasi @omarg-dev
 /AGENTS.md                       @RayanAlyasi @omarg-dev
 /CLAUDE.md                       @RayanAlyasi @omarg-dev
