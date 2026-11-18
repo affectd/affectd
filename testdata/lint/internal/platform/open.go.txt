@@ -1,0 +1,17 @@
+// Package platform may import os/exec because it calls operating-system tools.
+// It may not make network calls.
+package platform
+
+import (
+	"context"
+	"net/http" // want: depguard
+	"os/exec"
+)
+
+// Method keeps the net/http import in use.
+const Method = http.MethodPost
+
+// Open uses os/exec where it is allowed.
+func Open(ctx context.Context) error {
+	return exec.CommandContext(ctx, "open", ".").Run()
+}

@@ -22,7 +22,7 @@ Comment on an issue before you start work on it, so two people don't fix the sam
 
 ## Setting up
 
-You need Go (the version in `go.mod`), `make` and Git. For the macOS app you also need Xcode with Swift 6.
+You need Go (the version in `go.mod`), `make`, Git, Python 3 and [golangci-lint](https://golangci-lint.run/welcome/install/) (the version in `.github/workflows/ci.yml`). For the macOS app you also need Xcode with Swift 6.
 
 ```sh
 git clone https://github.com/affectd/affectd.git
@@ -30,7 +30,7 @@ cd affectd
 make check
 ```
 
-`make check` runs formatting, `go vet`, the linters, the tests with the race detector, and `govulncheck`. CI runs the same checks, so if it passes locally it should pass there.
+`make check` runs formatting, `go vet`, the linters, a check that each lint rule still rejects a deliberate violation, the tests with the race detector, and `govulncheck`. CI runs the same checks, so if it passes locally it should pass there.
 
 Other targets you'll use:
 

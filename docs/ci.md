@@ -6,7 +6,7 @@ affectd's pipeline is held to a higher standard than most projects, because a se
 
 | Workflow | Runs | What it does |
 | --- | --- | --- |
-| `ci.yml` | Every pull request and push to main | Lint, tests with the race detector on Linux, macOS and Windows, govulncheck, fuzz smoke tests, test integrity, benchmark comparison, a release test-build, the macOS app, and affectd scanning its own repository. One aggregate job, **CI passed**, is the status check branch protection requires. |
+| `ci.yml` | Every pull request and push to main | Lint, tests with the race detector on Linux, macOS and Windows, govulncheck, fuzz smoke tests, test integrity, benchmark comparison, a release test-build, the macOS app, and a check that each lint rule still rejects a deliberate violation. affectd starts scanning its own repository once `affectd scan` exists (F13). One aggregate job, **CI passed**, is the status check branch protection requires. |
 | `security.yml` | Every pull request | Dependency review (vulnerabilities and licences of new dependencies), zizmor workflow audit, OSV-Scanner. |
 | `codeql.yml` | Pull requests, main, weekly | CodeQL with the security-and-quality queries. |
 | `scorecard.yml` | Main, weekly | OpenSSF Scorecard, published for the README badge. |
@@ -44,12 +44,12 @@ affectd's pipeline is held to a higher standard than most projects, because a se
 
 ## Custom bots
 
-Build them as workflows, not a GitHub App: an App is a long-lived credential across repositories, while a workflow runs with a short-lived, minimal token. Four exist:
+Build them as workflows, not a GitHub App: an App is a long-lived credential across repositories, while a workflow runs with a short-lived, minimal token. There are four:
 
-1. The self-scan in `ci.yml` runs affectd against its own repository on every pull request, the way gittuf verifies its own repository with gittuf.
+1. The self-scan, added to `ci.yml` with `affectd scan` (F13), runs affectd against its own repository on every pull request, the way gittuf verifies its own repository with gittuf.
 2. `verify-release.yml` checks every published release the way a user would. Cosign's `validate-release` test-builds releases on pull requests; affectd does that too and then also verifies what it published.
 3. `data-watch.yml` checks the threat data from outside the data repository, so a broken pipeline can't silence its own alarm.
-4. `scripts/test-integrity.py` and `scripts/check-claude-config.py` guard the tests and the Claude Code configuration.
+4. `scripts/test-integrity.py`, `scripts/check-claude-config.py` and `scripts/check-lint-rules.py` guard the tests, the Claude Code configuration and the lint rules.
 
 ## Compared with OpenSSF projects
 
@@ -65,14 +65,19 @@ Checked 6 November 2026 from each project's `.github/workflows`.
 | Actions pinned by SHA | most | most | all | most | most | all, at least 14 days old |
 | Release test-built on pull requests | ✓ | | | | | ✓ |
 | Published releases verified like a user | | | | | | ✓ |
-| Verifies itself with its own tool | | | ✓ | | | ✓ |
+| Verifies itself with its own tool | | | ✓ | | | from F13 |
 | Reproducible build settings | ✓ | ✓ | ✓ | | n/a (other builder) | ✓ (tested) |
 
 ## Verification performed
 
+Last run on 18 November 2026, for F01.
+
 - actionlint 1.7.12 and the official workflow and Dependabot schemas: no problems.
-- zizmor 1.32.0, auditor persona: no findings, after fixing one real issue (an over-privileged GitHub App token) and adding names, concurrency limits and permission comments.
-- `goreleaser check` passes. Two release builds from the same commit, the second after touching every file, produced identical checksums for all six archives. The first attempt did not: archive timestamps differed until they were fixed to the commit date.
+- zizmor 1.31.1 (the version CI runs) and 1.32.0, auditor persona: no findings. The first audit found one real issue (an over-privileged GitHub App token) and missing names, concurrency limits and permission comments, all fixed. CI runs zizmor in the auditor persona with its online audits.
+- Every pinned action SHA matches its release tag, and every release is at least 14 days old.
+- GoReleaser 2.19.0: `goreleaser check` passes. Two snapshot builds from the same commit, the second after touching every file, produced identical checksums for all six archives, and the binary reports the version set at build time. The first attempt, during setup, did not: archive timestamps differed until they were fixed to the commit date.
+- `scripts/check-lint-rules.py` was tested against deliberately weakened configurations. It fails when an exclusion is unanchored or lifts more than its own rule, when a depguard exception is widened or matches nested packages, when a code-generation header or an import alias hides a violation, and when a linter or custom rule has no violation fixture. Building it found four holes, now fixed: `path: cmd/` also exempted packages such as `internal/subcmd/`; the safeio exclusion lifted every forbidigo rule there, including `panic`; depguard's exceptions matched nested packages at any depth; and a `Code generated … DO NOT EDIT.` header switched every rule off.
+- golangci-lint always gets `--config .golangci.yml`, because it would otherwise prefer a `.golangci.yaml`, `.json` or `.toml` added next to it.
 
 ## One-time GitHub setup
 
