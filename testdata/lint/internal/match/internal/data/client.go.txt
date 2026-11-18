@@ -1,0 +1,8 @@
+// Package data is nested inside another package, so it doesn't get
+// internal/data's network exception.
+package data
+
+import "net/http" // want: depguard
+
+// Client must be rejected.
+var Client = http.DefaultClient

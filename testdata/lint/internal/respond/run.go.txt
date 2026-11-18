@@ -1,0 +1,17 @@
+// Package respond may import os/exec because it carries out responses the user
+// confirmed. It may not make network calls.
+package respond
+
+import (
+	"context"
+	"net/http" // want: depguard
+	"os/exec"
+)
+
+// Method keeps the net/http import in use.
+const Method = http.MethodPost
+
+// Command uses os/exec where it is allowed.
+func Command(ctx context.Context) *exec.Cmd {
+	return exec.CommandContext(ctx, "true")
+}

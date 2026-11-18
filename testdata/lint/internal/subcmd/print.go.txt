@@ -1,0 +1,10 @@
+// Package subcmd has "cmd/" in its path but isn't under cmd/, so it may not
+// write to stdout.
+package subcmd
+
+import "fmt"
+
+// Print must be rejected.
+func Print() {
+	fmt.Println("fixture") // want: forbidigo
+}
