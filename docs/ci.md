@@ -41,6 +41,7 @@ affectd's pipeline is held to a higher standard than most projects, because a se
 | Stale bot | Skip | Auto-closing issues discourages new contributors to a young project. |
 | Auto-merge bots | Skip | They would bypass the two-person rule. |
 | AI agents in CI (Claude Code Action and similar) | Skip for now | In 2026, PR titles and issue comments were used to make AI agents in GitHub Actions leak secrets, including Anthropic's Claude Code Security Review action. affectd's CI handles attacker-written text constantly. Claude reviews run in maintainers' local sessions instead. |
+| CodeRabbit | Install on affectd/affectd only | AI review of contributors' pull requests, plus area labels, without running in our CI. It never approves, blocks or pushes commits, and secrets stay in the `release` environment; see [decision 0014](decisions/0014-coderabbit-advisory-review.md). |
 
 ## Custom bots
 
@@ -81,5 +82,6 @@ Checked 6 November 2026 from each project's `.github/workflows`.
 3. Settings → Rules: protect `main` with the four required checks in `docs/ci/allstar/branch_protection.yaml`, signed-off commits, and code-owner review.
 4. Settings → Code security: enable CodeQL, secret scanning with push protection, Dependabot alerts and security updates, and private vulnerability reporting.
 5. Install the Allstar and DCO GitHub Apps; copy `docs/ci/allstar/` into the org's `.allstar` repository.
-6. Create a GitHub App with contents and pull-request write access to `homebrew-tap` only; store its ID as the `TAP_APP_ID` variable and its key as the `TAP_APP_PRIVATE_KEY` secret.
+6. Create a GitHub App with contents and pull-request write access to `homebrew-tap` only; store its ID as the `TAP_APP_ID` variable and its key as the `TAP_APP_PRIVATE_KEY` secret, both in the `release` environment, never at repository level.
 7. Create the `data-watch` issue label.
+8. Install the CodeRabbit GitHub App with "Only select repositories" set to affectd/affectd.

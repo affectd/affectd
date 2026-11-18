@@ -15,3 +15,5 @@
 /.goreleaser.yaml                @RayanAlyasi @omarg-dev
 /docs/ci/                        @RayanAlyasi @omarg-dev
 /docs/decisions/                 @RayanAlyasi @omarg-dev
+# Configures a bot with write access to this repository (decision 0014).
+/.coderabbit.yaml                @RayanAlyasi @omarg-dev

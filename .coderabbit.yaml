@@ -1,0 +1,45 @@
+# CodeRabbit reviews pull requests as an advisor, never as a gate.
+# docs/decisions/0014-coderabbit-advisory-review.md explains these settings;
+# loosening any of them needs a new decision record.
+reviews:
+  # It never approves a pull request or requests changes. Merging needs a
+  # maintainer's code-owner review.
+  auto_approvals:
+    enabled: false
+    allow_author_approval: false
+  # It never pushes commits. We write tests first, and fixes go through review.
+  finishing_touches:
+    unit_tests:
+      enabled: false
+    autofix:
+      enabled: false
+    fix_ci:
+      enabled: false
+    resolve_merge_conflict:
+      enabled: false
+  # Area labels make pull requests easy to find. Pull-request text can steer
+  # them, so nothing may depend on a label.
+  auto_apply_labels: true
+  labeling_instructions:
+    - label: area/inventory
+      instructions: Changes to finding what is installed, in internal/inventory/ or internal/safeio/, or their npm, Python, editor-extension or MCP fixtures.
+    - label: area/data
+      instructions: Changes to threat data or local storage, in internal/data/, the SQLite store, docs/ci/data-build.yml or the threat-data format.
+    - label: area/matching
+      instructions: Changes to matching or re-matching the inventory against threat data, in internal/match/, or their benchmarks and budgets.
+    - label: area/campaigns
+      instructions: Changes to campaign packs or replay tests, in campaigns/, internal/replay/ or replay fixtures.
+    - label: area/cli
+      instructions: Changes to the command-line tool's commands or output, in cmd/affectd/.
+    - label: area/api
+      instructions: Changes to the local API, in proto/ or internal/api/.
+    - label: area/macos
+      instructions: Changes to the macOS app, in apps/macos/.
+    - label: area/ci
+      instructions: Changes to CI or releases, in .github/, .goreleaser.yaml, the Makefile, .golangci.yml or scripts/.
+chat:
+  # It replies only when someone mentions @coderabbitai.
+  auto_reply: false
+knowledge_base:
+  # No learnings, so a comment can't plant instructions for later reviews.
+  opt_out: true
