@@ -92,7 +92,7 @@ Use obviously fake secrets in fixtures, such as `FAKE-npm-token-0000`. Never com
 Every dependency is code that runs on our users' machines, so we add them carefully. Prefer the standard library and OSV-SCALIBR. If you need a new dependency, explain in the pull request why, and check that:
 
 - the module is the one you meant, since AI tools sometimes suggest package names that don't exist and that attackers then register
-- it's actively maintained and its licence is Apache-2.0, MIT, BSD, ISC or MPL-2.0
+- it's actively maintained and its licence is Apache-2.0, MIT, BSD (including the Go project's patent grant), ISC or MPL-2.0
 - it doesn't pull in a large tree of other dependencies for a small feature
 
 ## Using AI tools
