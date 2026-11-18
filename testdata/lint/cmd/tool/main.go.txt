@@ -1,14 +1,9 @@
-// Command tool may write to stdout because commands live under cmd/. It must
-// still read user files through safeio.
+// Command tool lives under cmd/ but isn't affectd, so it may not write to
+// stdout.
 package main
 
-import (
-	"fmt"
-	"os"
-)
+import "fmt"
 
 func main() {
-	fmt.Println("fixture")
-	_, _ = fmt.Fprintln(os.Stdout, "fixture")
-	_, _ = os.ReadFile("fixture") // want: forbidigo
+	fmt.Println("fixture") // want: forbidigo
 }

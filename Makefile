@@ -53,9 +53,12 @@ fuzz:
 
 # Ten runs per benchmark, so benchstat can tell real changes from noise.
 # pipefail: a failing benchmark must fail the target, not just tee's exit code.
+# Results reach bench/new.txt only from a complete run, so bench-compare never
+# reads a partial one.
 bench:
 	@mkdir -p bench
-	set -o pipefail; $(GO) test -run '^$$' -bench '$(BENCH)' -benchmem -count 10 $(PKGS) | tee bench/new.txt
+	set -o pipefail; $(GO) test -run '^$$' -bench '$(BENCH)' -benchmem -count 10 $(PKGS) | tee bench/new.txt.partial
+	mv bench/new.txt.partial bench/new.txt
 
 # Save a baseline first: on main, run `make bench && mv bench/new.txt bench/base.txt`.
 bench-compare:

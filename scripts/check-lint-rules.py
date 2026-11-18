@@ -31,8 +31,9 @@ CONFIG = ROOT / ".golangci.yml"
 FIXTURES = ROOT / "testdata" / "lint"
 MODULE = "example.com/lintfixture"
 WANT = re.compile(r"//\s*want:\s*(.+?)\s*$")
-# The message of each custom forbidigo and depguard rule.
-RULE_MESSAGE = re.compile(r'^\s*(?:msg|desc):\s*"(.+)"\s*$', re.MULTILINE)
+# Each custom forbidigo and depguard rule, and its message, in any YAML quoting.
+RULE = re.compile(r"^\s*-?\s*(?:pattern|pkg):", re.MULTILINE)
+RULE_MESSAGE = re.compile(r"^\s*(?:msg|desc):\s*(['\"]?)(.+?)\1\s*$", re.MULTILINE)
 # The golangci-lint version CI pins, which the expected issues are calibrated to.
 PINNED = re.compile(r"golangci-lint-action@\S+.*\n\s+with:\n\s+version:\s*(\S+)")
 
@@ -81,7 +82,20 @@ def reported(tree):
     if result.returncode != 0:
         sys.exit(f"golangci-lint run failed:\n{result.stdout}{result.stderr}")
     issues = json.loads(report.read_text())["Issues"] or []
-    return [((i["Pos"]["Filename"], i["Pos"]["Line"], i["FromLinter"]), i["Text"]) for i in issues]
+    # golangci-lint reports Windows paths with backslashes; the fixtures use slashes.
+    return [((i["Pos"]["Filename"].replace("\\", "/"), i["Pos"]["Line"], i["FromLinter"]), i["Text"]) for i in issues]
+
+
+def rule_messages():
+    """Return each custom rule's message, which identifies the rule in its issues."""
+    config = CONFIG.read_text()
+    messages = [m for _, m in RULE_MESSAGE.findall(config)]
+    if len(messages) != len(RULE.findall(config)):
+        sys.exit(".golangci.yml: give every forbidigo pattern a msg and every depguard pkg a desc, so each rule's issues can be told apart")
+    duplicates = sorted({m for m in messages if messages.count(m) > 1})
+    if duplicates:
+        sys.exit(f".golangci.yml: rule messages must be unique, so one fixture can't cover two rules: {duplicates}")
+    return messages
 
 
 def version_hint():
@@ -120,7 +134,7 @@ def main() -> int:
     problems += [f"unexpected: {f}:{n} {linter}: {text}" for (f, n, linter), text in sorted(issues) if (f, n, linter) not in want]
     problems += [f"unexpected: {f}:{n} {linter} reported {c} issues, want 1" for (f, n, linter), c in sorted(counts.items()) if c > 1 and (f, n, linter) in want]
     problems += [f"untested: {linter} is enabled but no fixture violates it" for linter in sorted(uncovered)]
-    problems += [f"untested: no fixture triggers the rule {m!r}" for m in RULE_MESSAGE.findall(CONFIG.read_text()) if m not in messages]
+    problems += [f"untested: no fixture triggers the rule {m!r}" for m in rule_messages() if m not in messages]
     for problem in problems:
         print(problem)
     if problems:

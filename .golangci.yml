@@ -75,7 +75,7 @@ linters:
       - path: ^internal/safeio/
         text: "Read user files through internal/safeio"
         linters: [forbidigo]
-      - path: ^cmd/
+      - path: ^cmd/affectd/
         text: "Only cmd/affectd writes to stdout"
         linters: [forbidigo]
       - path: _test\.go

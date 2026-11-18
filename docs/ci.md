@@ -6,7 +6,7 @@ affectd's pipeline is held to a higher standard than most projects, because a se
 
 | Workflow | Runs | What it does |
 | --- | --- | --- |
-| `ci.yml` | Every pull request and push to main | Lint, tests with the race detector on Linux, macOS and Windows, govulncheck, fuzz smoke tests, test integrity, benchmark comparison, a release test-build, the macOS app, and a check that each lint rule still rejects a deliberate violation. affectd starts scanning its own repository once `affectd scan` exists (F13). One aggregate job, **CI passed**, is the status check branch protection requires. |
+| `ci.yml` | Every pull request and push to main | Lint, tests on Linux, macOS and Windows (with the race detector on Linux and macOS), govulncheck, fuzz smoke tests, test integrity, benchmark comparison, a release test-build, the macOS app, and a check that each lint rule still rejects a deliberate violation. affectd starts scanning its own repository once `affectd scan` exists (F13). One aggregate job, **CI passed**, is the status check branch protection requires. |
 | `security.yml` | Every pull request | Dependency review (vulnerabilities and licences of new dependencies), zizmor workflow audit, OSV-Scanner. |
 | `codeql.yml` | Pull requests, main, weekly | CodeQL with the security-and-quality queries. |
 | `scorecard.yml` | Main, weekly | OpenSSF Scorecard, published for the README badge. |
