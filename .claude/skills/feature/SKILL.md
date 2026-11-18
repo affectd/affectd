@@ -5,9 +5,9 @@ disable-model-invocation: true
 argument-hint: "[feature-id]"
 ---
 
-Implement one roadmap feature. `$ARGUMENTS` is the feature id. If it is empty, pick the first feature whose `"passes"` is `false` and whose `depends_on` features all pass.
+Implement one roadmap feature. `$ARGUMENTS` is the feature id. If it is empty, pick the first feature whose `"passes"` is `false`, whose `depends_on` features all pass, and whose issue isn't assigned to someone else.
 
-1. **Orient.** Run `git log --oneline -15` and read the feature's entry in `docs/roadmap/v0.1.json`. Run `make check` to confirm the tree is green before changing anything. If it isn't green, stop and report what fails.
+1. **Orient.** Run `git log --oneline -15` and read the feature's entry in `docs/roadmap/v0.1.json`. Assign its issue to yourself with `gh issue edit <issue> --add-assignee @me`, so the roadmap board shows who is working on it. Run `make check` to confirm the tree is green before changing anything. If it isn't green, stop and report what fails.
 2. **Design.** Before any code:
    - Outline two or three genuinely different approaches and compare them on correctness, time and memory at affectd's scale (the budgets in `.claude/rules/matching.md`), simplicity and security. Pick the best and say why.
    - List the edge cases, failure paths and inputs the approach must handle, including attacker-written ones.
@@ -18,4 +18,4 @@ Implement one roadmap feature. `$ARGUMENTS` is the feature id. If it is empty, p
 5. **Measure** if the feature touches matching, inventory or data loading: add or update the benchmark, run `make bench`, and compare with `make bench-compare` against the saved baseline. Stay within the budgets in `.claude/rules/matching.md`.
 6. **Verify.** Run `make check`. Then get three fresh-context reviews, running the two subagents in parallel: `/code-review` for bugs, the `quality-reviewer` for design, duplication, performance and tests, and the `security-reviewer` for the threat model. Fix every blocking or must-fix finding, and each should-fix finding unless you can state why it doesn't apply. Leave "consider" items alone unless they're clearly worth it. Run `make check` again. Do at most one review-and-fix round; if new blocking findings appear after it, or a finding calls for a redesign, stop and bring them to the user.
 7. **Record.** Set `"passes": true` for this feature only. Leave its description and acceptance criteria unchanged.
-8. **Commit** with `git commit -s` and a message that names the feature id. Then tell the user what changed, the test and benchmark evidence, the reviewers' findings and how they were resolved, and anything left open. Finish by recommending a fresh session for the next feature, since everything needed is now in git and the feature list.
+8. **Commit** with `git commit -s` and a message that names the feature id and includes `Fixes #<issue>`, where `<issue>` is the feature's `issue` number in `docs/roadmap/v0.1.json`. When a pull request is opened for the feature, put `Fixes #<issue>` in its description too, so merging it closes the issue and moves it to Done on the roadmap board. Then tell the user what changed, the test and benchmark evidence, the reviewers' findings and how they were resolved, and anything left open. Finish by recommending a fresh session for the next feature, since everything needed is now in git and the feature list.
