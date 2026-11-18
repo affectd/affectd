@@ -1,7 +1,7 @@
 name: Feature request
 description: Suggest something affectd should do
 title: "[feature]: "
-labels: ["enhancement"]
+labels: ["enhancement", "needs triage"]
 body:
   - type: textarea
     id: problem
