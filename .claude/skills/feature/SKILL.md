@@ -5,9 +5,9 @@ disable-model-invocation: true
 argument-hint: "[feature-id]"
 ---
 
-Implement one roadmap feature. `$ARGUMENTS` is the feature id. If it is empty, pick the first feature whose `"passes"` is `false` and whose `depends_on` features all pass.
+Implement one roadmap feature. `$ARGUMENTS` is the feature id. If it is empty, pick the first feature whose `"passes"` is `false`, whose `depends_on` features all pass, and whose issue isn't assigned to someone else.
 
-1. **Orient.** Run `git log --oneline -15` and read the feature's entry in `docs/roadmap/v0.1.json`. Run `make check` to confirm the tree is green before changing anything. If it isn't green, stop and report what fails.
+1. **Orient.** Run `git log --oneline -15` and read the feature's entry in `docs/roadmap/v0.1.json`. Assign its issue to yourself with `gh issue edit <issue> --add-assignee @me`, so the roadmap board shows who is working on it. Run `make check` to confirm the tree is green before changing anything. If it isn't green, stop and report what fails.
 2. **Design.** Before any code:
    - Outline two or three genuinely different approaches and compare them on correctness, time and memory at affectd's scale (the budgets in `.claude/rules/matching.md`), simplicity and security. Pick the best and say why.
    - List the edge cases, failure paths and inputs the approach must handle, including attacker-written ones.
