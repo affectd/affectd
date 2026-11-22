@@ -1,7 +1,7 @@
 name: Missed or wrong detection
 description: affectd missed an attack, flagged something safe, or gave wrong advice
 title: "[detection]: "
-labels: ["detection"]
+labels: ["detection", "needs triage"]
 body:
   - type: markdown
     attributes:
