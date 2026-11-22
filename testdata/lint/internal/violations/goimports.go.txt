@@ -1,0 +1,11 @@
+package violations
+
+import (
+	"strings"
+
+	"example.com/lintfixture/internal/ai" // want: goimports
+	"os"
+)
+
+// Grouped mixes a module import into the standard-library group.
+var Grouped = strings.ToUpper(os.Args[0]) + ai.Endpoint

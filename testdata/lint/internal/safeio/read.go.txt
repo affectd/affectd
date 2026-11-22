@@ -1,0 +1,20 @@
+// Package safeio may call os.Open and os.ReadFile because it is where the size
+// and symlink checks live. The other forbidden calls are still rejected.
+package safeio
+
+import "os"
+
+// Open calls os.Open where it is allowed.
+func Open() (*os.File, error) {
+	return os.Open("fixture")
+}
+
+// ReadAll calls os.ReadFile where it is allowed.
+func ReadAll() ([]byte, error) {
+	return os.ReadFile("fixture")
+}
+
+// Crash stops protection where it hurts most.
+func Crash() {
+	panic("fixture") // want: forbidigo
+}

@@ -1,0 +1,34 @@
+package violations
+
+import (
+	"os"
+	"strings"
+	"sync"
+)
+
+// Remove ignores the error from os.Remove.
+func Remove() {
+	os.Remove("fixture") // want: errcheck, gosec
+}
+
+// Locked receives its mutex by value, so locking it protects nothing.
+func Locked(mu sync.Mutex) int { // want: govet
+	mu.Lock()
+	n := 1
+	mu.Unlock()
+	return n
+}
+
+// Overwritten assigns a value that is never read.
+func Overwritten() int {
+	n := 1 // want: ineffassign
+	n = 2
+	return n
+}
+
+// Title calls a deprecated function.
+func Title(s string) string {
+	return strings.Title(s) // want: staticcheck
+}
+
+func unusedHelper() {} // want: unused

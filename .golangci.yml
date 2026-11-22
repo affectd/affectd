@@ -40,8 +40,10 @@ linters:
           files:
             - "$all"
             - "!$test"
-            - "!**/internal/data/**"
-            - "!**/internal/ai/**"
+            # ${base-path} anchors each exception at the repository root, so a
+            # nested internal/data elsewhere doesn't inherit it.
+            - "!${base-path}/internal/data/**"
+            - "!${base-path}/internal/ai/**"
           deny:
             - pkg: net/http
               desc: "Only internal/data (threat data) and internal/ai (user-configured AI provider) make network calls."
@@ -49,25 +51,32 @@ linters:
           files:
             - "$all"
             - "!$test"
-            - "!**/internal/respond/**"
-            - "!**/internal/platform/**"
+            - "!${base-path}/internal/respond/**"
+            - "!${base-path}/internal/platform/**"
           deny:
             - pkg: os/exec
               desc: "affectd never runs scanned content. Launching processes lives in internal/respond and internal/platform."
     forbidigo:
+      # Match on the real package, so an aliased import can't hide a call.
+      analyze-types: true
       forbid:
-        - pattern: ^os\.(ReadFile|Open)$
+        - pattern: ^os\.(ReadFile|Open|DirFS)$
           msg: "Read user files through internal/safeio, which enforces size limits and symlink checks."
-        - pattern: ^fmt\.Print
+        - pattern: ^(fmt\.Print.*|os\.Stdout)$
           msg: "Use log/slog. Only cmd/affectd writes to stdout."
         - pattern: ^panic$
           msg: "Return an error. A crash stops protection."
   exclusions:
+    # A "Code generated ... DO NOT EDIT." header must not switch off the rules
+    # that protect users. Exclude generated code by path when some exists.
+    generated: disable
     rules:
-      - path: internal/safeio/
+      # Each exception lifts one rule, matched by its message.
+      - path: ^internal/safeio/
+        text: "Read user files through internal/safeio"
         linters: [forbidigo]
-      - path: cmd/
-        text: "fmt.Print"
+      - path: ^cmd/affectd/
+        text: "Only cmd/affectd writes to stdout"
         linters: [forbidigo]
       - path: _test\.go
         linters: [forbidigo, gosec, dupl]
