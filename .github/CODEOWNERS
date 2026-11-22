@@ -1,3 +1,7 @@
+# Every pull request requests review from the other maintainer; GitHub never
+# requests the author. Later lines take precedence, so the paths below stay
+# maintainers-only when reviewers are added to this line.
+*                                @RayanAlyasi @omarg-dev
 # These files run on contributors' machines or publish releases. With branch
 # protection requiring code-owner review, a change by one maintainer always
 # needs the other maintainer to approve it.
