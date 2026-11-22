@@ -1,0 +1,4 @@
+package violations
+
+// Spacing is not gofmt-formatted.
+var Spacing = map[string]int{"a":1} // want: gofmt, goimports

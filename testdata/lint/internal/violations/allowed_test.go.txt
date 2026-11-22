@@ -1,0 +1,72 @@
+package violations
+
+import (
+	"fmt"
+	"net/http"
+	"os"
+	"os/exec"
+	"testing"
+)
+
+// Tests may read files directly, print, panic, import the network and process
+// packages, write files with loose permissions and repeat themselves. None of
+// this may be rejected in a _test.go file.
+func TestAllowed(t *testing.T) {
+	if _, err := os.ReadFile("fixture"); err == nil {
+		fmt.Println(http.MethodGet, exec.ErrNotFound)
+	}
+	if err := os.WriteFile("fixture", nil, 0o644); err != nil {
+		panic(err)
+	}
+	if countUp([]int{1}) != countDown([]int{1}) {
+		t.Error("the duplicated helpers disagree")
+	}
+}
+
+func countUp(xs []int) int {
+	n, seen := 0, 0
+	for _, x := range xs {
+		switch {
+		case x > 100:
+			n += 3
+		case x > 10:
+			n += 2
+		case x > 0:
+			n++
+		default:
+			n--
+		}
+		seen++
+		if n > 500 {
+			n = 500
+		}
+	}
+	if seen == 0 {
+		return -1
+	}
+	return n * seen
+}
+
+func countDown(ys []int) int {
+	m, count := 0, 0
+	for _, y := range ys {
+		switch {
+		case y > 200:
+			m += 4
+		case y > 20:
+			m += 3
+		case y > 0:
+			m++
+		default:
+			m--
+		}
+		count++
+		if m > 900 {
+			m = 900
+		}
+	}
+	if count == 0 {
+		return -2
+	}
+	return m * count
+}

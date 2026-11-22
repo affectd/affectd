@@ -1,0 +1,8 @@
+// Package dataset has a path that starts like internal/data's, but it may
+// not make network calls.
+package dataset
+
+import "net/http" // want: depguard
+
+// Client must be rejected.
+var Client = http.DefaultClient

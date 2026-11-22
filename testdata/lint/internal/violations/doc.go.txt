@@ -1,0 +1,4 @@
+// Package violations breaks each rule in .golangci.yml once. Every line that
+// must be rejected ends with a want annotation naming the linters that report
+// it; scripts/check-lint-rules.py fails if any of them stays quiet.
+package violations

@@ -1,0 +1,86 @@
+package violations
+
+import (
+	"errors"
+	"fmt"
+	"io"
+	"net/http" // want: depguard
+	"os"
+	"os/exec" // want: depguard
+)
+
+// Method keeps the net/http import in use.
+const Method = http.MethodGet
+
+// ErrNotFound keeps the os/exec import in use.
+var ErrNotFound = exec.ErrNotFound
+
+// ReadWhole reads a user file without safeio's size limit.
+func ReadWhole() ([]byte, error) {
+	return os.ReadFile("fixture") // want: forbidigo
+}
+
+// OpenDirect opens a user file without safeio's symlink checks.
+func OpenDirect() (*os.File, error) {
+	return os.Open("fixture") // want: forbidigo
+}
+
+// Print writes to stdout outside cmd/.
+func Print() {
+	fmt.Println("fixture") // want: forbidigo
+}
+
+// Crash stops protection instead of returning an error.
+func Crash() {
+	panic("fixture") // want: forbidigo
+}
+
+// TODO finish this placeholder. // want: godox
+
+// Separate has a misspelling in its comment: recieve. // want: misspell
+func Separate() {}
+
+// IsEOF compares errors with == instead of errors.Is.
+func IsEOF(err error) bool {
+	return err == io.EOF // want: errorlint
+}
+
+// Swallow returns nil after an error.
+func Swallow() error {
+	if _, err := os.Stat("fixture"); err != nil {
+		return nil // want: nilerr
+	}
+	return errors.New("fixture")
+}
+
+// WriteShared writes a file that other users can read.
+func WriteShared(b []byte) error {
+	return os.WriteFile("fixture", b, 0o644) // want: gosec
+}
+
+// Itoa formats an int the slow way.
+func Itoa(n int) string {
+	return fmt.Sprintf("%d", n) // want: perfsprint
+}
+
+// Lookup names its parameter against Go's initialism convention.
+func Lookup(userId int) int { // want: revive
+	return userId
+}
+
+// Double calls a helper that ignores one of its parameters.
+func Double(n int) int {
+	return double(n, 1) + double(n+1, 2)
+}
+
+func double(n, unused int) int { // want: unparam, revive
+	m := n * 2
+	return m + 1
+}
+
+// Extend appends to the wrong slice.
+func Extend(xs, ys []int) int {
+	n := len(xs)
+	xs = append(ys, n) // want: gocritic
+	return len(xs)
+}

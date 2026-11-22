@@ -1,0 +1,37 @@
+// Package data may import net/http because it fetches the threat data, so that
+// import must not be rejected. Launching processes and the request mistakes
+// below still must be.
+package data
+
+import (
+	"context"
+	"net/http"
+	"os/exec" // want: depguard
+)
+
+// ErrNotFound keeps the os/exec import in use.
+var ErrNotFound = exec.ErrNotFound
+
+const source = "https://example.com/data"
+
+// Status never closes the response body.
+func Status(ctx context.Context) (int, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, source, nil)
+	if err != nil {
+		return 0, err
+	}
+	resp, err := http.DefaultClient.Do(req) // want: bodyclose
+	if err != nil {
+		return 0, err
+	}
+	return resp.StatusCode, nil
+}
+
+// Fetch makes a request that can't be cancelled.
+func Fetch() error {
+	resp, err := http.Get(source) // want: noctx
+	if err != nil {
+		return err
+	}
+	return resp.Body.Close()
+}

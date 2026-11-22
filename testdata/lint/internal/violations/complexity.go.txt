@@ -1,0 +1,67 @@
+package violations
+
+// Classify nests branches past the cognitive-complexity limit.
+func Classify(xs []int) int { // want: gocognit
+	total := 0
+	for _, x := range xs {
+		if x > 0 {
+			for i := range x {
+				if i%2 == 0 {
+					if i > 10 {
+						total += i
+					}
+				} else {
+					total--
+				}
+			}
+		} else {
+			if x%2 == 0 && x%3 == 0 {
+				if x < -10 || x > -5 {
+					total *= 2
+				}
+			}
+			total--
+		}
+	}
+	return total
+}
+
+// SumEven and SumOdd are the same code with different names.
+func SumEven(xs []int) int { // want: dupl
+	total, count := 0, 0
+	for i, x := range xs {
+		if x%2 == 0 && i >= 0 {
+			total += x * 2
+			count++
+		} else {
+			total -= x + 1
+		}
+		if total > 1000 {
+			total = 1000
+		}
+	}
+	if count == 0 {
+		return -1
+	}
+	return total / count
+}
+
+// SumOdd duplicates SumEven.
+func SumOdd(ys []int) int { // want: dupl
+	sum, n := 0, 0
+	for j, y := range ys {
+		if y%2 == 1 && j >= 0 {
+			sum += y * 3
+			n++
+		} else {
+			sum -= y + 2
+		}
+		if sum > 2000 {
+			sum = 2000
+		}
+	}
+	if n == 0 {
+		return -2
+	}
+	return sum / n
+}

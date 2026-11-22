@@ -1,0 +1,14 @@
+// Command affectd may write to stdout because it is the one binary. It must
+// still read user files through safeio.
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+func main() {
+	fmt.Println("fixture")
+	_, _ = fmt.Fprintln(os.Stdout, "fixture")
+	_, _ = os.ReadFile("fixture") // want: forbidigo
+}
