@@ -1,0 +1,10 @@
+// Package safeiox has a path that starts like internal/safeio's, but it
+// must still read files through safeio.
+package safeiox
+
+import "os"
+
+// Open must be rejected.
+func Open() (*os.File, error) {
+	return os.Open("fixture") // want: forbidigo
+}

@@ -1,0 +1,10 @@
+// Package safeio is nested inside another package, so it doesn't get
+// internal/safeio's file-read exception.
+package safeio
+
+import "os"
+
+// Open must be rejected.
+func Open() (*os.File, error) {
+	return os.Open("fixture") // want: forbidigo
+}

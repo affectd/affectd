@@ -1,3 +1,8 @@
 # Personal Claude Code settings and notes stay out of the repository.
 .claude/settings.local.json
 CLAUDE.local.md
+
+# Output of make bench, make cover and GoReleaser.
+/bench/
+/cover.out
+/dist/

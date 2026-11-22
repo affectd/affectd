@@ -22,7 +22,7 @@ Comment on an issue before you start work on it, so two people don't fix the sam
 
 ## Setting up
 
-You need Go (the version in `go.mod`), `make` and Git. For the macOS app you also need Xcode with Swift 6.
+You need Go (the version in `go.mod`), `make`, Git, Python 3 and [golangci-lint](https://golangci-lint.run/welcome/install/) (the version in `.github/workflows/ci.yml`). For the macOS app you also need Xcode with Swift 6.
 
 ```sh
 git clone https://github.com/affectd/affectd.git
@@ -30,7 +30,7 @@ cd affectd
 make check
 ```
 
-`make check` runs formatting, `go vet`, the linters, the tests with the race detector, and `govulncheck`. CI runs the same checks, so if it passes locally it should pass there.
+`make check` runs formatting, `go vet`, the linters, a check that each lint rule still rejects a deliberate violation, the tests with the race detector, and `govulncheck`. CI runs the same checks, so if it passes locally it should pass there.
 
 Other targets you'll use:
 
@@ -92,7 +92,7 @@ Use obviously fake secrets in fixtures, such as `FAKE-npm-token-0000`. Never com
 Every dependency is code that runs on our users' machines, so we add them carefully. Prefer the standard library and OSV-SCALIBR. If you need a new dependency, explain in the pull request why, and check that:
 
 - the module is the one you meant, since AI tools sometimes suggest package names that don't exist and that attackers then register
-- it's actively maintained and its licence is Apache-2.0, MIT, BSD, ISC or MPL-2.0
+- it's actively maintained and its licence is Apache-2.0, MIT, BSD (including the Go project's patent grant), ISC or MPL-2.0
 - it doesn't pull in a large tree of other dependencies for a small feature
 
 ## Using AI tools

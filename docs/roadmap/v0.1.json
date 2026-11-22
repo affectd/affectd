@@ -8,7 +8,7 @@
       "description": "Repository skeleton: Go module with govulncheck, benchstat and gremlins pinned as go.mod tools; Makefile quality gates; .golangci.yml; the CI system in docs/ci.md (ci, security, codeql, scorecard, weekly, release, verify-release, data-watch, claude-config); .goreleaser.yaml; Dependabot; the one-time GitHub setup.",
       "acceptance": "On the first pull request every workflow runs green and CI passed is the required check; actionlint and zizmor (auditor persona) report no findings; a snapshot release builds reproducibly; the lint rules reject a deliberate violation of each rule.",
       "depends_on": [],
-      "passes": false
+      "passes": true
     },
     {
       "id": "F02-safeio",
