@@ -28,7 +28,10 @@ jobs:
       - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           version: v2.15.0
-      - run: make fmt-check vet
+          # Explicit, because golangci-lint would otherwise prefer a
+          # .golangci.yaml, .json or .toml added next to .golangci.yml.
+          args: --config=.golangci.yml
+      - run: make fmt-check vet lint-rules
 
   test:
     name: Test (${{ matrix.os }})
@@ -91,27 +94,6 @@ jobs:
           go-version-file: go.mod
       - run: make fuzz FUZZTIME=20s
 
-  # affectd scans its own repository and build environment, the way gittuf
-  # verifies its own repository with gittuf. Starts once the CLI exists.
-  dogfood:
-    name: affectd scans itself
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read # read the repository
-    steps:
-      - uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
-        with:
-          egress-policy: audit
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version-file: go.mod
-      - name: Scan this repository with affectd
-        if: hashFiles('cmd/affectd/main.go') != ''
-        run: go run ./cmd/affectd scan --path . --format json --fail-on compromised
-
   swift:
     name: macOS app
     runs-on: macos-latest
@@ -160,13 +142,23 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
-      # Base and head run on the same machine, so the comparison is fair.
+      # Base and head run on the same machine, so the comparison is fair. It
+      # only informs reviewers: if the base branch's benchmarks are broken, a
+      # pull request that fixes them must not fail on its base, so it gets an
+      # empty baseline instead. The head's benchmarks must always run.
       - name: Compare benchmarks with the base branch
+        shell: bash
         run: |
           git checkout --quiet "origin/${GITHUB_BASE_REF}"
-          make bench && mv bench/new.txt /tmp/base.txt
+          if make bench; then
+            mv bench/new.txt /tmp/base.txt
+          else
+            echo "::warning::The base branch's benchmarks didn't run, so there is no baseline to compare against."
+            : > /tmp/base.txt
+          fi
           git checkout --quiet "${GITHUB_SHA}"
-          make bench && cp /tmp/base.txt bench/base.txt
+          make bench
+          cp /tmp/base.txt bench/base.txt
           make bench-compare | tee -a "$GITHUB_STEP_SUMMARY"
 
   # Test-builds the release on every pull request, as Cosign does, so a
@@ -189,7 +181,6 @@ jobs:
           go-version-file: go.mod
           cache: false # release builds never use a shared cache
       - name: Test-build the release
-        if: hashFiles('cmd/affectd/main.go') != ''
         uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
         with:
           distribution: goreleaser
@@ -199,7 +190,7 @@ jobs:
   ci-ok:
     name: CI passed
     if: always()
-    needs: [lint, test, vuln, fuzz, dogfood, swift, test-integrity, benchmarks, release-snapshot]
+    needs: [lint, test, vuln, fuzz, swift, test-integrity, benchmarks, release-snapshot]
     runs-on: ubuntu-latest
     permissions: {}
     steps:

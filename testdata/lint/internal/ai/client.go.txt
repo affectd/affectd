@@ -1,0 +1,11 @@
+// Package ai may import net/http because it calls the user-configured AI
+// provider, so nothing here may be rejected.
+package ai
+
+import "net/http"
+
+// Endpoint is imported by the goimports fixture.
+const Endpoint = "https://example.com/ai"
+
+// Client uses net/http where it is allowed.
+var Client = http.DefaultClient

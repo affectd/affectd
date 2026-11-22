@@ -1,0 +1,9 @@
+// Command tool lives under cmd/ but isn't affectd, so it may not write to
+// stdout.
+package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("fixture") // want: forbidigo
+}

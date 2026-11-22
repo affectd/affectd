@@ -1,0 +1,21 @@
+package violations
+
+import (
+	"io/fs"
+	xos "os"
+)
+
+// ReadAliased hides os.ReadFile behind an import alias.
+func ReadAliased() ([]byte, error) {
+	return xos.ReadFile("fixture") // want: forbidigo
+}
+
+// Dir reads the file system without safeio's checks.
+func Dir() fs.FS {
+	return xos.DirFS("fixture") // want: forbidigo
+}
+
+// PrintStdout writes to stdout without fmt.Print.
+func PrintStdout() {
+	_, _ = xos.Stdout.WriteString("fixture") // want: forbidigo
+}

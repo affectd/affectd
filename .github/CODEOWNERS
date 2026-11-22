@@ -14,7 +14,11 @@
 /campaigns/                      @RayanAlyasi @omarg-dev
 # The quality gates themselves: weakening them would be the easy way to "pass".
 /Makefile                        @RayanAlyasi @omarg-dev
-/.golangci.yml                   @RayanAlyasi @omarg-dev
+/.golangci.*                     @RayanAlyasi @omarg-dev
+/testdata/lint/                  @RayanAlyasi @omarg-dev
+# go.mod pins the tools the gates run (govulncheck, benchstat, gremlins).
+/go.mod                          @RayanAlyasi @omarg-dev
+/go.sum                          @RayanAlyasi @omarg-dev
 /scripts/                        @RayanAlyasi @omarg-dev
 /.goreleaser.yaml                @RayanAlyasi @omarg-dev
 /docs/ci/                        @RayanAlyasi @omarg-dev
