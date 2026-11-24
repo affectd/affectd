@@ -42,6 +42,7 @@ affectd's pipeline is held to a higher standard than most projects, because a se
 | Auto-merge bots | Skip | They would bypass the two-person rule. |
 | Pull-request labeller and auto-assign actions | Skip | Labelling or assigning a pull request from a fork needs a write token, which means `pull_request_target`, forbidden here because it runs with write access on attacker-controlled pull requests. None of the five OpenSSF projects below use them. Instead, issue forms add the type and `needs triage` labels, CODEOWNERS requests the other maintainer's review, and the issue a pull request fixes already carries its area label. |
 | AI agents in CI (Claude Code Action and similar) | Skip for now | In 2026, PR titles and issue comments were used to make AI agents in GitHub Actions leak secrets, including Anthropic's Claude Code Security Review action. affectd's CI handles attacker-written text constantly. Claude reviews run in maintainers' local sessions instead. |
+| CodeRabbit | Install on affectd/affectd only | AI review of contributors' pull requests, plus area labels, without running in our CI. It never approves, blocks or pushes commits, and secrets stay in the `release` environment; see [decision 0014](decisions/0014-coderabbit-advisory-review.md). |
 
 ## Custom bots
 
@@ -87,5 +88,6 @@ Last run on 18 November 2026, for F01.
 3. Settings → Rules: protect `main` with the four required checks in `docs/ci/allstar/branch_protection.yaml`, signed-off commits, and code-owner review.
 4. Settings → Code security: enable CodeQL, secret scanning with push protection, Dependabot alerts and security updates, and private vulnerability reporting.
 5. Install the Allstar and DCO GitHub Apps; copy `docs/ci/allstar/` into the org's `.allstar` repository.
-6. Create a GitHub App with contents and pull-request write access to `homebrew-tap` only; store its ID as the `TAP_APP_ID` variable and its key as the `TAP_APP_PRIVATE_KEY` secret.
+6. Create a GitHub App with contents and pull-request write access to `homebrew-tap` only; store its ID as the `TAP_APP_ID` variable and its key as the `TAP_APP_PRIVATE_KEY` secret, both in the `release` environment, never at repository level.
 7. Create the `data-watch` issue label.
+8. Install the CodeRabbit GitHub App with "Only select repositories" set to affectd/affectd.

@@ -19,3 +19,4 @@ To propose a change, copy `0000-template.md` to the next number, open a pull req
 | [0011](0011-macos-and-windows-distribution.md) | Homebrew first on macOS; SignPath for Windows | Accepted |
 | [0012](0012-community-and-licensing.md) | Licence and community rules | Accepted |
 | [0013](0013-no-ai-agents-in-ci.md) | No AI agents in CI | Accepted |
+| [0014](0014-coderabbit-advisory-review.md) | CodeRabbit reviews as an advisor, never a gate | Proposed |
